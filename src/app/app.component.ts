@@ -149,10 +149,10 @@ getCopyField(key) {
 
               const item = field.parent.fieldGroup.find((item) => {
                 console.log(item);
-                return item.key === savedKey;
+                return item.key !== savedKey;
               });
               console.log(item);
-              if (item || value == null) {
+              if (!item || value == null) {
                   this.form.get(savedKey).reset();
               } else {
                 const copyField = this.getCopyField(savedKey);
