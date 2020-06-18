@@ -41,7 +41,7 @@ export class AppComponent {
           onInit: (field) => {
             console.log(field);
             const control = this.form.get(field.key);
-            const fieldItem = this.add(control, 'teams');
+            const fieldItem = this.add(control, 'child');
             this.fields = [...this.fields, fieldItem];
           }
         }
@@ -56,7 +56,7 @@ export class AppComponent {
       templateOptions: {
         label: key,
         options: [],
-        valueProp: 'id',
+        valueProp: 'value',
         labelProp: 'name',
       },
       hooks: {
@@ -71,7 +71,6 @@ export class AppComponent {
 
           field.templateOptions.options = control.valueChanges.pipe(
             flatMap(() => this.dataService.getData()),
-            distinctUntilChanged(),
             tap((value) => {
               console.log(control.value);
               // if (!control.value) {
@@ -79,17 +78,26 @@ export class AppComponent {
               // } else {
               //   field.hide = false;
               // }
+              
               const currentControl = this.form.get(key);
               currentControl.setValue(null);
               console.log(currentControl);
 
-              const validation = this.fields.find((item) => {
-                return item.key == 'player';
+              // if (!currentControl.value) return;
+              
+              currentControl.valueChanges.subscribe((values) => {
+                console.log(values);
+                const validation = this.fields.find((item) => {
+                  return item.key == values.answer;
+                });
+                if (!validation) {
+                  const fieldItem = this.add(currentControl, values.answer);
+                  this.fields = [...this.fields, fieldItem];
+                }
               });
-              if (!validation) {
-                const fieldItem = this.add(currentControl, 'player');
-                this.fields = [...this.fields, fieldItem];
-              }
+
+
+
             }),
           );
 

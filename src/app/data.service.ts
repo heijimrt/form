@@ -27,10 +27,22 @@ export class DataService {
 
   getData() {
     return of([
-      { id: '1', name: 'Bayern Munich', sportId: '1' },
-      { id: '2', name: 'Real Madrid', sportId: '1' },
-      { id: '3', name: 'Cleveland', sportId: '2' },
-      { id: '4', name: 'Miami', sportId: '2' },
+      { value: {
+        answer: 'ci',
+        analysisId: '',
+      }, name: 'Bayern Munich', sportvalue: '1' },
+      { value: {
+        answer: 'cd',
+        analysisId: '',
+      }, name: 'Real Madrvalue', sportId: '1' },
+      { value: {
+        answer: 'ce',
+        analysisId: '',
+      }, name: 'Cleveland', sportId: '2' },
+      { value: {
+        answer: 'cq',
+        analysisId: '',
+      }, name: 'Miami', sportId: '2' },
     ]);
   }
 
