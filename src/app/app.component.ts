@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { FormlyFieldConfig } from '@ngx-formly/core';
-import { map, startWith, tap, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { map, startWith, tap, debounceTime, distinctUntilChanged, flatMap } from 'rxjs/operators';
 import { DataService } from './data.service';
 import { Subscription } from 'rxjs';
 
@@ -20,7 +20,7 @@ export class AppComponent {
   constructor(private readonly dataService: DataService) {}
 
   ngOnInit() {
-    this.fields = [...this.start()]
+    this.fields = this.start();
   }
 
   start() {
@@ -41,133 +41,65 @@ export class AppComponent {
           onInit: (field) => {
             console.log(field);
             const control = this.form.get(field.key);
-            this.subscription = control.valueChanges
-              .pipe(
-                debounceTime(300)
-                ,distinctUntilChanged()
-              )
-              .subscribe((value) => {
-                console.log('teste', value);
-
-                const item = field.parent.fieldGroup.find((item) => {
-                  return item.key === 'team';
-                });
-
-                if (item) {
-                    this.form.get('team').reset();
-                    console.log('HERE', item);
-                    item.templateOptions.options = this.dataService.getData2();
-                } else {
-                  const team = this.getCopyField('team');
-
-                  this.fields = [
-                    ...this.fields,
-                    team
-                  ]
-                }
-
-              });
+            const fieldItem = this.add(control, 'teams');
+            this.fields = [...this.fields, fieldItem];
           }
         }
       },
     ];
   }
 
-  getTeam() {
+  private add(control, key) {
     return {
-      key: 'team',
+      key,
       type: 'select',
       templateOptions: {
-        label: 'Team',
-        options: this.dataService.getData(),
+        label: key,
+        options: [],
         valueProp: 'id',
         labelProp: 'name',
       },
       hooks: {
-        onInit: field => {
-          console.log('oo', field);
+        onInit: (field) => {
 
-            console.log(field);
-            const control = this.form.get(field.key);
-            this.subscription = control.valueChanges
-              .pipe(
-                debounceTime(300)
-                ,distinctUntilChanged()
-              )
-              .subscribe((value) => {
-                console.log('teste', value);
+          // control.valueChanges
+          //   .subscribe((value) => {
+          //     console.log('teste');
+          //     field.templateOptions.options = this.dataService.getData();
 
-                const item = field.parent.fieldGroup.find((item) => {
-                  return item.key === 'lake';
-                });
+          //   });
 
-                if (item || value == null) {
-                    this.form.get('lake').reset();
-                } else {
-                  // const lake = this.getLake();
+          field.templateOptions.options = control.valueChanges.pipe(
+            flatMap(() => this.dataService.getData()),
+            distinctUntilChanged(),
+            tap((value) => {
+              console.log(control.value);
+              // if (!control.value) {
+              //   field.hide = true;
+              // } else {
+              //   field.hide = false;
+              // }
+              const currentControl = this.form.get(key);
+              currentControl.setValue(null);
+              console.log(currentControl);
 
-                  this.fields = [
-                    ...this.fields,
-                    // lake
-                  ]
-                }
-
+              const validation = this.fields.find((item) => {
+                return item.key == 'player';
               });
-
-
-
-
-        },
-      },
-    };
-}
-
-getCopyField(key) {
-  return {
-    key,
-    type: 'select',
-    templateOptions: {
-      label: key,
-      options: this.dataService.getData(),
-      valueProp: 'id',
-      labelProp: 'name',
-    },
-    hooks: {
-      onInit: field => {
-        console.log('oo', field);
-
-          console.log(field);
-          const control = this.form.get(field.key);
-          this.subscription = control.valueChanges
-            .pipe(
-              debounceTime(300)
-              ,distinctUntilChanged()
-            )
-            .subscribe((value) => {
-              console.log('teste', value);
-              const savedKey = 'lake';
-
-              const item = field.parent.fieldGroup.find((item) => {
-                console.log(item);
-                return item.key !== savedKey;
-              });
-              console.log(item);
-              if (!item || value == null) {
-                  this.form.get(savedKey).reset();
-              } else {
-                const copyField = this.getCopyField(savedKey);
-
-                this.fields = [
-                  ...this.fields,
-                  copyField
-                ]
+              if (!validation) {
+                const fieldItem = this.add(currentControl, 'player');
+                this.fields = [...this.fields, fieldItem];
               }
+            }),
+          );
 
-            });
-      },
-    },
-  };
-}
+          // const currentControl = field.formControl;
+          // const fieldItem = this.add(currentControl, 'player');
+          // this.fields = [...this.fields, fieldItem];
+        }
+      }
+    };
+  }
 
 
   ngOnDestroy() {
