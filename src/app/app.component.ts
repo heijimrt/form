@@ -58,6 +58,7 @@ export class AppComponent {
         options: [],
         valueProp: 'id',
         labelProp: 'name',
+        disabled: true
       },
       hooks: {
         onInit: (field) => {
@@ -70,26 +71,34 @@ export class AppComponent {
           //   });
 
           field.templateOptions.options = control.valueChanges.pipe(
-            flatMap(() => this.dataService.getData()),
             distinctUntilChanged(),
+            flatMap((changed) => {
+              console.log(changed);
+              return this.dataService.getData();
+            }),
             tap((value) => {
-              console.log(control.value);
-              // if (!control.value) {
-              //   field.hide = true;
-              // } else {
-              //   field.hide = false;
-              // }
-              const currentControl = this.form.get(key);
+              field.templateOptions.disabled = false;
+              console.log(field);
+              const currentControl = field.formControl;
               currentControl.setValue(null);
               console.log(currentControl);
 
-              const validation = this.fields.find((item) => {
-                return item.key == 'player';
-              });
-              if (!validation) {
-                const fieldItem = this.add(currentControl, 'player');
-                this.fields = [...this.fields, fieldItem];
-              }
+              currentControl
+                .valueChanges
+                .pipe(
+                  startWith(currentControl.value),
+                  distinctUntilChanged()
+                )
+                .subscribe((values) => {
+                  const validation = this.fields.find((item) => {
+                    return item.key == 'player2';
+                  });
+                  if (!validation) {
+                    const fieldItem = this.add(currentControl, 'player2');
+                    this.fields = [...this.fields, fieldItem];
+                  }
+                });
+
             }),
           );
 
