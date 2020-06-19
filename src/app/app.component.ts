@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { map, startWith, tap, debounceTime, distinctUntilChanged, flatMap } from 'rxjs/operators';
@@ -8,7 +8,8 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 export class AppComponent {
   form = new FormGroup({});
@@ -54,45 +55,32 @@ export class AppComponent {
       key,
       type: 'select',
       templateOptions: {
-        label: key,
+        label: '',
         options: [],
         valueProp: 'value',
         labelProp: 'name',
+        disabled: true
       },
       hooks: {
         onInit: (field) => {
 
-          // control.valueChanges
-          //   .subscribe((value) => {
-          //     console.log('teste');
-          //     field.templateOptions.options = this.dataService.getData();
-
-          //   });
-
           field.templateOptions.options = control.valueChanges.pipe(
             flatMap(() => this.dataService.getData()),
             tap((value) => {
-              console.log(control.value);
-              // if (!control.value) {
-              //   field.hide = true;
-              // } else {
-              //   field.hide = false;
-              // }
-              
+              field.templateOptions.disabled = false;              
               const currentControl = this.form.get(key);
-              currentControl.setValue(null);
-              console.log(currentControl);
+              console.log('CHAMNAOD AQUI');
+              // currentControl.setValue(null);
 
-              // if (!currentControl.value) return;
               
               currentControl.valueChanges.subscribe((values) => {
-                console.log(values);
                 const validation = this.fields.find((item) => {
                   return item.key == values.answer;
                 });
-                if (!validation) {
-                  const fieldItem = this.add(currentControl, values.answer);
-                  this.fields = [...this.fields, fieldItem];
+
+                if (!validation) {   
+                    const fieldItem = this.add(currentControl, values.answer);
+                    this.fields = [...this.fields, fieldItem];
                 }
               });
 
