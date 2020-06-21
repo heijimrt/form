@@ -1,9 +1,14 @@
-import { Component } from '@angular/core';
-import { FormGroup } from '@angular/forms';
-import { FormlyFieldConfig } from '@ngx-formly/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
+import { FormGroup, FormArray, FormBuilder, AbstractControl } from '@angular/forms';
+import { FormlyFormOptions, FormlyFieldConfig } from '@ngx-formly/core';
 import { map, startWith, tap, debounceTime, distinctUntilChanged, flatMap } from 'rxjs/operators';
 import { DataService } from './data.service';
 import { Subscription } from 'rxjs';
+
+export interface act {
+  id: number;
+  name: string;
+}
 
 @Component({
   selector: 'app-root',
@@ -11,107 +16,66 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  form = new FormGroup({});
-  model = { email: 'email@gmail.com' };
-  fields: FormlyFieldConfig[] = [ ];
+  typeLoadName: string;
+  lFormGroup: FormGroup;
+  stateControl: AbstractControl;
+  stateFormControls: FormGroup;
 
-  subscription: Subscription;
+  get lFormArray(): FormArray {
+    return this.lFormGroup.get("lFormArray") as FormArray;
+  }
 
-  constructor(private readonly dataService: DataService) {}
+  statelist = [ ];
+  citylist = [];
+  constructor(private fb: FormBuilder, private dataService: DataService, private cd: ChangeDetectorRef) {}
 
   ngOnInit() {
-    this.fields = this.start();
+    this.initControls();
   }
 
-  start() {
-    return [
-      {
-        key: 'sport',
-        type: 'select',
-        templateOptions: {
-          label: 'Sport',
-          options: [
-            { id: '1', name: 'Soccer' },
-            { id: '2', name: 'Basketball' },
-          ],
-          valueProp: 'id',
-          labelProp: 'name',
-        },
-        hooks: {
-          onInit: (field) => {
-            console.log(field);
-            const control = this.form.get(field.key);
-            const fieldItem = this.add(control, 'teams');
-            this.fields = [...this.fields, fieldItem];
-          }
-        }
-      },
-    ];
+  initControls() {
+    this.lFormGroup = this.fb.group({
+      lFormArray: this.fb.array([])
+    });
+    // this.statelist.forEach(element => {
+    //   this.stateFormControls = this.createControls();
+    //   this.lFormArray.push(this.stateFormControls);
+    // });
+    this.dataService
+      .getData({})
+      .subscribe((data: any) => {
+        console.log(data);
+        this.statelist = data.question.answers;
+        this.stateFormControls = this.createControls();
+        this.lFormArray.push(this.stateFormControls);
+      });
   }
 
-  private add(control, key) {
-    return {
-      key,
-      type: 'select',
-      templateOptions: {
-        label: key,
-        options: [],
-        valueProp: 'id',
-        labelProp: 'name',
-        disabled: true
-      },
-      hooks: {
-        onInit: (field) => {
+  onChangeState(event, index) {
+    //this.lFormArray.get([index + '', 'cities_list']).patchValue(event.cities);
+    console.log(event);
+    if (event) {
+      this.dataService
+      .getData2(event)
+      .pipe(debounceTime(300), distinctUntilChanged() ,tap((data: any) => {
+        console.log(data);
+        this.statelist = data.question.answers;
+        this.stateFormControls = this.createControls();
+        this.lFormArray.push(this.stateFormControls);
+      }))
+      .subscribe((value: any) => {
+        const item = this.lFormArray.at(index);
+        console.log(item);
+        item.disable();
+        this.cd.detectChanges();
+      });
+    }
 
-          // control.valueChanges
-          //   .subscribe((value) => {
-          //     console.log('teste');
-          //     field.templateOptions.options = this.dataService.getData();
-
-          //   });
-
-          field.templateOptions.options = control.valueChanges.pipe(
-            distinctUntilChanged(),
-            flatMap((changed) => {
-              console.log(changed);
-              return this.dataService.getData();
-            }),
-            tap((value) => {
-              field.templateOptions.disabled = false;
-              console.log(field);
-              const currentControl = field.formControl;
-              currentControl.setValue(null);
-              console.log(currentControl);
-
-              currentControl
-                .valueChanges
-                .pipe(
-                  startWith(currentControl.value),
-                  distinctUntilChanged()
-                )
-                .subscribe((values) => {
-                  const validation = this.fields.find((item) => {
-                    return item.key == 'player2';
-                  });
-                  if (!validation) {
-                    const fieldItem = this.add(currentControl, 'player2');
-                    this.fields = [...this.fields, fieldItem];
-                  }
-                });
-
-            }),
-          );
-
-          // const currentControl = field.formControl;
-          // const fieldItem = this.add(currentControl, 'player');
-          // this.fields = [...this.fields, fieldItem];
-        }
-      }
-    };
+  }
+  createControls() {
+    return this.fb.group({
+      state: ""
+    });
   }
 
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
-  }
 }

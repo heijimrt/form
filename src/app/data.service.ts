@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 // var faker = require('faker');
 
 @Injectable({
@@ -7,53 +8,13 @@ import { of } from 'rxjs';
 })
 export class DataService {
 
-  getField() {
-    return {
-      key: 'team',
-      type: 'select',
-      templateOptions: {
-        label: 'team',
-        options: [
-          { id: '1', name: 'Soccer' },
-          { id: '2', name: 'Basketball' },
-        ],
-        valueProp: 'id',
-        labelProp: 'name',
-      },
-    };
+  constructor(private http: HttpClient) {}
+
+  public getData(value): any {
+    return this.http.post('http://localhost:3000/question', value);
   }
 
-
-
-  getData() {
-    return of([
-      { id: '1', name: 'Bayern Munich', sportId: '1' },
-      { id: '2', name: 'Real Madrid', sportId: '1' },
-      { id: '3', name: 'Cleveland', sportId: '2' },
-      { id: '4', name: 'Miami', sportId: '2' },
-    ]);
-  }
-
-  getData2() {
-    return of([
-      { id: '1', name: 'Bayern Munich2', sportId: '1' },
-      { id: '2', name: 'Real Madrid2', sportId: '1' },
-      { id: '3', name: 'Cleveland3', sportId: '2' },
-      { id: '4', name: 'Miami4', sportId: '2' },
-    ]);
-  }
-
-  fromApi() {
-    return {
-      question: {
-        title: 'teste',
-        answers: [
-          'ci'
-        ]
-      },
-      analysis: {
-        id: Math.random()
-      }
-    }
+  public getData2(value): any {
+    return this.http.post('http://localhost:3000/question2', value);
   }
 }

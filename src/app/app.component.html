@@ -1,18 +1,28 @@
-<form
-  [formGroup]="form">
-  <formly-form
-    [model]="model"
-    [fields]="fields"
-    [form]="form">
-  </formly-form>
+<form [formGroup]="lFormGroup">
+  <div formArrayName="lFormArray">
+    <div
+      [formGroupName]="i"
+      *ngFor="let item of lFormArray.controls; let i = index"
+    >
+      <div class="form-group row mb-2">
+        <label class="col-md-2 col-form-label" for="cityId">State</label>
+        <div class="col-md-3">
+          <ng-select
+            (change)="onChangeState($event, i)"
+            [items]="statelist"
+            bindLabel="label"
+            bindValue="value"
+            [disabled]="true"
+            placeholder="Select state"
+            formControlName="state"                         
+          >
+          </ng-select>
+        </div>
+      </div>
+    </div>
+  </div>
 </form>
 
-<br>
-<br><br><br>
-<div>
-    {{ form.value | json }}
-</div>
-
-<div>
-
-</div>
+<pre>
+{{ lFormGroup.value | json }}
+</pre>
