@@ -1,23 +1,25 @@
-pipeline{
-  agent { label 'nodejs8' }
-  stages{
-    stage ('checkout'){
-      steps{
-        checkout scm
+pipeline {
+  agent {
+    docker { image 'node:latest' }
+  }
+  stages {
+    stage('Install') {
+      steps { sh 'npm install' }
+    }
+
+    stage('Test') {
+      parallel {
+        stage('Static code analysis') {
+            steps { sh 'npm run-script lint' }
+        }
+        stage('Unit tests') {
+            steps { sh 'npm run-script test' }
+        }
       }
     }
-    stage ('install modules'){
-      steps{
-        sh '''
-          npm install --verbose -d 
-          npm install --save classlist.js
-        '''
-      }
-    }
-    stage ('build') {
-      steps{
-        sh '$(npm bin)/ng build --prod --build-optimizer'
-      }
+
+    stage('Build') {
+      steps { sh 'npm run-script build' }
     }
   }
 }
