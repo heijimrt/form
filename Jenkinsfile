@@ -1,20 +1,20 @@
 node {
     stage('Install') {
-      steps { sh 'npm install' }
+      sh 'npm install'
     }
 
     stage('Test') {
       parallel {
         stage('Static code analysis') {
-            steps { sh 'npm run-script lint' }
+            sh 'npm run-script lint'
         }
         stage('Unit tests') {
-            steps { sh 'npm run-script test' }
+            sh 'npm run-script test'
         }
       }
     }
 
     stage('Build') {
-      steps { sh 'npm run-script build' }
+      sh 'npm run-script build'
     }
 }
