@@ -1,5 +1,4 @@
-pipeline {
-  agent {}
+node {
   stages {
     stage('Install') {
       steps { sh 'npm install' }
