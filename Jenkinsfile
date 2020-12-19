@@ -1,5 +1,4 @@
 node {
-  stages {
     stage('Install') {
       steps { sh 'npm install' }
     }
@@ -18,5 +17,4 @@ node {
     stage('Build') {
       steps { sh 'npm run-script build' }
     }
-  }
 }
