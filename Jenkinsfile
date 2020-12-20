@@ -1,25 +1,14 @@
 pipeline {
-  agent {
-    docker { image 'node:latest' }
-  }
+  agent any
   stages {
-    stage('Install') {
-      steps { sh 'npm install' }
-    }
-
-    stage('Test') {
-      parallel {
-        stage('Static code analysis') {
-            steps { sh 'npm run-script lint' }
-        }
-        stage('Unit tests') {
-            steps { sh 'npm run-script test' }
+    stage('Checkout') {
+      steps {
+        echo 'Checkout master branch'
+        checkout scm
+        dir('webapp') {
+          bat 'npm install'
         }
       }
-    }
-
-    stage('Build') {
-      steps { sh 'npm run-script build' }
     }
   }
 }
